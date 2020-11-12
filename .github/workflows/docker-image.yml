@@ -1,0 +1,29 @@
+name: Docker Image CI
+
+on: workflow_dispatch
+
+jobs:
+  vue-frontend-image:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Use Node.js 8
+      uses: actions/setup-node@v1
+      with:
+        node-version: 8
+    - name: npm install, build, and test
+      run: |
+        npm install
+        npm run build
+
+    - name: Build test image
+      run: docker build . --file ./Dockerfile --tag xcbeyond/vue-frontend
+
+    - name: Login dockerhub registry
+      run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u xcbeyond --password-stdin
+        
+    - name: Push image
+      run: |
+        docker image tag xcbeyond/vue-frontend xcbeyond/vue-frontend
+        docker push xcbeyond/vue-frontend
